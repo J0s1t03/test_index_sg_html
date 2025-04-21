@@ -1,0 +1,72 @@
+body {
+    background-color: hsl(202, 60%, 50%);
+}
+h1{
+    color: white;
+    margin-left: 40%;
+    font-size: 50px;
+}
+header{
+    width: 15%;
+    margin-left: 42%; 
+}
+nav {
+    width: 75%;
+}
+form {margin-left: 40%; margin-right: 33%;}
+input[type=text], input[type=password]{
+    width: 75%;
+    height: 40px;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+label, input[type=button]{
+    width: 75%;
+    height: 40px;
+    margin: 8px 0;
+    display: inline-block; 
+}
+
+select {
+    width: 75%;
+    height: 40px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    outline: 0;
+}
+
+#error{
+    color: white;
+    width: 75%;
+    height: 40px;
+    border: 2px white;
+    border-style: solid none;
+    display: none;
+}
+
+label{
+    color: white;
+}
+
+button{
+    margin-bottom: 10px;
+    margin-top: 10px;
+    outline: 0;
+    height: 30px;
+    margin-left: 29%;;
+}
+
+#checkbox{
+    width: 60%;
+}
+
+footer{
+    width: 20%;
+    margin-left: 41%;
+    color: white;
+    margin-top: 15%;
+}

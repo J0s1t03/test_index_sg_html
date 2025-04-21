@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <script src="jquery-3.7.1.min.js" type="text/javascript"></script>
+        <script src="script.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="styles.css">
+        <title>Iniciar sesión</title>
+        <link rel="icon" type="image/x-icon" href="images/icon.ico">
+    </head>
+    <body>
+        <div class="login-container">
+            <header>
+                <img src="images/logo_login.png">
+            </header>
+            <nav>
+                <h1>Safeguard for Privileged Passwords</h1>
+            </nav>
+            <content>
+                <form method="POST" id="formulario">
+                    <div id="error"></div>
+                    <div id="select" style="display: visible">
+                        <select>
+                            <option>Seleccionar proveedor de autenticación...</option>
+                            <option>adgbs.com</option>
+                            <option>adgbsabadell.com</option>
+                            <option>bsmexico.banks.adgbs.com</option>
+                            <option>Federacion externa</option>
+                            <option>Local</option>
+                        </select>
+                    </div>
+                    <input type="text" name="username" placeholder="Nombre de usuario" id="user" required>
+                    <input type="password" name="password" placeholder="Contraseña" id="pwd" required>
+                    <label for="checkbox" id="checkbox">
+                        <input type="checkbox" name="remember">Usar la autenticación de certificado/tarjeta inteligente</p>
+                    </label>
+                    <br>
+                    <button type="button" onclick="login()">Iniciar sesión</button>
+                    <!--<input type="submit" value="Iniciar sesión">-->
+                </form>
+            </content>
+        </div>
+        <footer>
+            <h6><span>&#169;</span> 2025 One Identity LLC. TODOS LOS DERECHOS RESERVADOS.</h6>
+        </footer>
+    </body>
+</html>

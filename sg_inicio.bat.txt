@@ -1,0 +1,3 @@
+@echo off
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\Users\THor\Desktop\sg_fdhp.ps1'"
+pause

@@ -1,0 +1,29 @@
+# Definir las rutas de origen y destino
+$destinationPath = "safeguard"
+$sourcePath = [System.IO.Path]::Combine($env:USERPROFILE, 'Desktop', $destinationPath ) # Carpeta en el escritorio
+$destinationPath = 'C:\inetpub\wwwroot\'+$destinationPath  # Ruta de destino
+
+# Copiar la carpeta y todo su contenido
+Copy-Item -Path $sourcePath -Destination $destinationPath -Recurse -Force
+# Importar el módulo WebAdministration para interactuar con IISF
+Import-Module WebAdministration
+
+# Definir los parámetros para el nuevo sitio
+$siteName = "safeguard" # Nombre del sitio
+$sitePath = "C:\inetpub\wwwroot\$siteName" # Ruta física del sitio en el servidor
+$bindingInfo = "@{protocol=""http"";bindingInformation="":80:$siteName""}" # Dirección IP:Puerto:Nombre del Host (por ejemplo, :80 para HTTP en el puerto 80)
+$appPoolName = "DefaultAppPool" # Nombre del pool de aplicaciones, puedes crear uno nuevo si es necesario
+
+# Crear el directorio para el sitio web si no existe
+if (-not (Test-Path $sitePath)) {
+    New-Item -ItemType Directory -Path $sitePath
+}
+
+# Crear el nuevo sitio en IIS
+New-Item -Path IIS:\Sites\$siteName -bindings $bindingInfo -physicalPath $sitePath
+
+# Establecer el pool de aplicaciones para el nuevo sitio
+Set-ItemProperty "IIS:\Sites\$siteName" -Name applicationPool -Value $appPoolName
+
+# Verificar si el sitio se ha creado correctamente
+Get-Item "IIS:\Sites\$siteName"

@@ -1,3 +1,10 @@
+cd C:\Windows\System32\inetsrv
+
+.\appcmd unlock config -section:system.webServer/security/authorization
+.\appcmd unlock config -section:system.webServer/security/authentication/windowsAuthentication
+.\appcmd unlock config -section:system.webServer/security/authentication/anonymousAuthentication
+
+
 # Definir las rutas de origen y destino
 $destinationPath = "safeguard"
 $sourcePath = [System.IO.Path]::Combine($env:USERPROFILE, 'Desktop', $destinationPath ) # Carpeta en el escritorio

@@ -1,0 +1,150 @@
+# Definir las rutas de origen y destino
+$destinationPath = "safeguard"
+$sourcePath = [System.IO.Path]::Combine($env:USERPROFILE, 'Desktop', $destinationPath ) # Carpeta en el escritorio
+$destinationPath = 'C:\inetpub\wwwroot\'+$destinationPath  # Ruta de destino
+Remove-Item -Path $destinationPath -Recurse -Force -ErrorAction SilentlyContinue
+
+# Copiar la carpeta y todo su contenido
+Copy-Item -Path $sourcePath -Destination $destinationPath -Recurse -Force
+# Importar el módulo WebAdministration para interactuar con IIS
+Import-Module WebAdministration
+
+# Definir los parámetros para el nuevo sitio
+$siteName = "safeguard" # Nombre del sitio
+$sitePath = "C:\inetpub\wwwroot\$siteName" # Ruta física del sitio en el servidor
+$bindingInfo = "@{protocol=""http"";bindingInformation="":80:$siteName""}" # Dirección IP:Puerto:Nombre del Host (por ejemplo, :80 para HTTP en el puerto 80)
+$appPoolName = "DefaultAppPool" # Nombre del pool de aplicaciones, puedes crear uno nuevo si es necesario
+
+# Crear el directorio para el sitio web si no existe
+if (-not (Test-Path $sitePath)) {
+    New-Item -ItemType Directory -Path $sitePath
+}
+
+# Crear el nuevo sitio en IIS
+New-Item -Path IIS:\Sites\$siteName -bindings $bindingInfo -physicalPath $sitePath -Force
+
+# Establecer el pool de aplicaciones para el nuevo sitio
+Set-ItemProperty "IIS:\Sites\$siteName" -Name applicationPool -Value $appPoolName
+
+# Verificar si el sitio se ha creado correctamente
+Get-Item "IIS:\Sites\$siteName"
+
+# temas de copia en HTTPSite y HTTPSSite
+Copy-Item "$env:USERPROFILE\Desktop\safeguard\*" -Destination "C:\inetpub\wwwroot\HTTP" -Recurse -Force
+Copy-Item "$env:USERPROFILE\Desktop\safeguard\*" -Destination "C:\inetpub\wwwroot\HTTPS" -Recurse -Force
+Copy-Item "$env:USERPROFILE\Desktop\safeguard\*" -Destination "C:\inetpub\wwwroot\HTTPSite" -Recurse -Force
+Copy-Item "$env:USERPROFILE\Desktop\safeguard\*" -Destination "C:\inetpub\wwwroot\HTTPSSite" -Recurse -Force
+Copy-Item "$env:USERPROFILE\Desktop\safeguard\*" -Destination "C:\inetpub\wwwroot\" -Recurse -Force
+
+# Requiere ejecutar como Administrador
+
+# Nombre del sitio IIS
+$siteName = "HTTPSite"
+$siteFolder = "C:\inetpub\wwwroot\miweb"
+$appPoolName = $siteName
+$sitePath = "IIS:\Sites\$siteName"
+
+Import-Module WebAdministration
+
+Write-Output "Configurando autenticación en IIS para el sitio '$siteName'..."
+
+# 1. Activar Anonymous Authentication
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/anonymousAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $true
+
+# 2. Desactivar otros métodos de autenticación
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/windowsAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $false
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/basicAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $false
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/digestAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $false
+
+# 3. Limpiar reglas de autorización y permitir a todos los usuarios
+Clear-WebConfiguration -Filter "system.webServer/security/authorization" -PSPath $sitePath
+Add-WebConfiguration -Filter "system.webServer/security/authorization" -PSPath $sitePath `
+    -Value @{accessType="Allow"; users="*"}
+
+# 4. Configurar AppPool para usar ApplicationPoolIdentity
+Set-ItemProperty "IIS:\AppPools\$appPoolName" -Name processModel.identityType -Value "ApplicationPoolIdentity"
+
+# 5. Otorgar permisos NTFS al usuario del AppPool
+$poolUser = "IIS AppPool\$appPoolName"
+
+if (-Not (Test-Path $siteFolder)) {
+    Write-Output "Creando carpeta del sitio: $siteFolder"
+    New-Item -ItemType Directory -Path $siteFolder -Force
+}
+
+Write-Output "Asignando permisos de lectura NTFS a $poolUser en $siteFolder..."
+icacls $siteFolder /grant "${poolUser}:(OI)(CI)(RX)" | Out-Null
+
+# 6. Crear index.html si no existe
+$indexPath = Join-Path $siteFolder "index.html"
+if (-Not (Test-Path $indexPath)) {
+    Write-Output "Creando archivo index.html de prueba..."
+    Set-Content $indexPath "<html><body><h1>Hola Mundo - Sitio $siteName</h1></body></html>"
+}
+
+# 7. Reiniciar IIS
+Write-Output "Reiniciando IIS..."
+iisreset | Out-Null
+
+Write-Output "✅ Sitio '$siteName' configurado para acceso anónimo. Abre http://localhost/ en tu navegador."
+
+
+# Requiere ejecutar como Administrador
+
+# Nombre del sitio IIS
+$siteName = "HTTPSSite"
+$siteFolder = "C:\inetpub\wwwroot\miweb"
+$appPoolName = $siteName
+$sitePath = "IIS:\Sites\$siteName"
+
+Import-Module WebAdministration
+
+Write-Output "Configurando autenticación en IIS para el sitio '$siteName'..."
+
+# 1. Activar Anonymous Authentication
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/anonymousAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $true
+
+# 2. Desactivar otros métodos de autenticación
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/windowsAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $false
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/basicAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $false
+Set-WebConfigurationProperty -Filter "system.webServer/security/authentication/digestAuthentication" `
+    -PSPath $sitePath -Name "enabled" -Value $false
+
+# 3. Limpiar reglas de autorización y permitir a todos los usuarios
+Clear-WebConfiguration -Filter "system.webServer/security/authorization" -PSPath $sitePath
+Add-WebConfiguration -Filter "system.webServer/security/authorization" -PSPath $sitePath `
+    -Value @{accessType="Allow"; users="*"}
+
+# 4. Configurar AppPool para usar ApplicationPoolIdentity
+Set-ItemProperty "IIS:\AppPools\$appPoolName" -Name processModel.identityType -Value "ApplicationPoolIdentity"
+
+# 5. Otorgar permisos NTFS al usuario del AppPool
+$poolUser = "IIS AppPool\$appPoolName"
+
+if (-Not (Test-Path $siteFolder)) {
+    Write-Output "Creando carpeta del sitio: $siteFolder"
+    New-Item -ItemType Directory -Path $siteFolder -Force
+}
+
+Write-Output "Asignando permisos de lectura NTFS a $poolUser en $siteFolder..."
+icacls $siteFolder /grant "${poolUser}:(OI)(CI)(RX)" | Out-Null
+
+# 6. Crear index.html si no existe
+$indexPath = Join-Path $siteFolder "index.html"
+if (-Not (Test-Path $indexPath)) {
+    Write-Output "Creando archivo index.html de prueba..."
+    Set-Content $indexPath "<html><body><h1>Hola Mundo - Sitio $siteName</h1></body></html>"
+}
+
+# 7. Reiniciar IIS
+Write-Output "Reiniciando IIS..."
+iisreset | Out-Null
+
+Write-Output "✅ Sitio '$siteName' configurado para acceso anónimo. Abre http://localhost/ en tu navegador."
